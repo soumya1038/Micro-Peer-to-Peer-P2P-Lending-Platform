@@ -15,9 +15,12 @@ const loanSchema = new mongoose.Schema({
         type: Number,
         required: true,
     },
+    purpose: {
+        type: String,
+    },
     state: {
         type: String,
-        enum: ['pending', 'approved', 'rejected'],
+        enum: ['pending', 'approved', 'rejected', 'funded', "partially_funded"],
         default: 'pending',
     },
     fundedAmount: {

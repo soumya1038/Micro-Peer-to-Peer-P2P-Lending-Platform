@@ -1,4 +1,7 @@
 const LoanRequest = require('../models/loanRequest');
+const Transaction = require('../models/Transaction');
+const FundedLoan = require('../models/FundedLoan');
+const mongoose = require('mongoose');
 
 exports.createLoan = async (req, res) => {
     const { amount, tenureMonths, purpose } = req.body;
@@ -25,7 +28,9 @@ exports.createLoan = async (req, res) => {
 };
 
 exports.getMarketplace = async (req, res) => {
-    const loans = await LoanRequest.find({ state: 'pending' }).populate('borrower', 'name');
+    const loans = await LoanRequest.find({ 
+        state: { $in: ['pending', 'partially_funded'] } 
+    }).populate('borrower', 'name');
     res.json({ loans });
 };
 
@@ -40,4 +45,66 @@ exports.getLoanById = async (req, res) => {
         return res.status(404).json({ message: 'Loan request not found' });
     }
     res.json({ loan });
+};
+
+exports.fundLoan = async (req, res) => {
+    const session = await mongoose.startSession();
+    session.startTransaction();
+
+    try {
+        const { amount } = req.body;
+
+        if (!amount || amount <= 0) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(400).json({ message: 'Invalid funding amount' });
+        }
+
+        const loan = await LoanRequest.findById(req.params.id).session(session);
+
+        if (!loan) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(404).json({ message: 'Loan request not found' });
+        }
+
+        const remainingAmount = loan.amount - loan.fundedAmount;
+
+        if (amount > remainingAmount) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(400).json({ message: `Funding amount exceeds remaining loan amount. Remaining: ${remainingAmount}` });
+        }
+
+        await FundedLoan.create([{
+            loanId: loan._id,
+            lenderId: req.user.id,
+            amount
+        }], { session });
+
+        await Transaction.create([{
+            loanId: loan._id,
+            lenderId: req.user.id,
+            amount,
+            type: 'funding'
+        }], { session });
+
+        loan.fundedAmount += amount;
+        if (loan.fundedAmount === loan.amount) {
+            loan.state = 'funded';
+        } else {
+            loan.state = 'partially_funded';
+        }
+
+        await loan.save({ session });
+
+        await session.commitTransaction();
+        session.endSession();
+
+        res.json({ message: 'Loan funded successfully', loan });
+    } catch (error) {
+        await session.abortTransaction();
+        session.endSession();
+        res.status(400).json({ message: 'Error funding loan', error: error.message });
+    }
 };
