@@ -9,12 +9,12 @@ const api = axios.create({
 // Add token to each request dynamically
 api.interceptors.request.use((config) => {
     const token = localStorage.getItem("token");
-    console.log('Interceptor - Token:', token);
+    // console.log('Interceptor - Token:', token);
     if (token) {
         config.headers.Authorization = `Bearer ${token}`;
-        console.log('Interceptor - Authorization header set:', config.headers.Authorization);
+        // console.log('Interceptor - Authorization header set:', config.headers.Authorization);
     } else {
-        console.log('Interceptor - No token found in localStorage');
+        // console.log('Interceptor - No token found in localStorage');
     }
     return config;
 });
@@ -22,11 +22,11 @@ api.interceptors.request.use((config) => {
 // Add response interceptor for debugging
 api.interceptors.response.use(
     (response) => {
-        console.log('API Response:', response);
+        // console.log('API Response:', response);
         return response;
     },
     (error) => {
-        console.log('API Error:', error.response?.status, error.response?.data);
+        // // console.log('API Error:', error.response?.status, error.response?.data);
         return Promise.reject(error);
     }
 );

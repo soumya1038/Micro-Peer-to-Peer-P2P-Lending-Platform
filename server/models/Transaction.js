@@ -20,6 +20,11 @@ const transactionSchema = new mongoose.Schema({
         enum: ['funding'],
         required: true,
     },
+    status: {
+        type: String,
+        enum: ['success', 'failed'],
+        default: 'success',
+    },
 }, { timestamps: true });
 
 module.exports = mongoose.model('Transaction', transactionSchema);

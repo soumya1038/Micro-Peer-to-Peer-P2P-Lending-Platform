@@ -76,6 +76,24 @@ exports.fundLoan = async (req, res) => {
             return res.status(400).json({ message: `Funding amount exceeds remaining loan amount. Remaining: ${remainingAmount}` });
         }
 
+        if (loan.state === 'funded') {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(400).json({ message: 'Loan is already fully funded' });
+        }
+
+        if (loan.borrower.toString() === req.user.id) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(400).json({ message: 'You cannot fund your own loan' });
+        }
+
+        if (amount < 100) {
+            await session.abortTransaction();
+            session.endSession();
+            return res.status(400).json({ message: 'Funding amount must be at least ₹100' });
+        }
+
         await FundedLoan.create([{
             loanId: loan._id,
             lenderId: req.user.id,

@@ -24,3 +24,6 @@ Thumbs.db
 
 # Coverage
 coverage/
+
+# Backups
+*.zip

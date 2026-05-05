@@ -1,6 +1,7 @@
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 const User = require('../models/User');
+const stripe = require("../config/stripe");
 
 exports.register = async (req, res) => {
     const { name, email, password, role } = req.body;
@@ -32,4 +33,38 @@ exports.login = async (req, res) => {
     const token = jwt.sign({ id: user._id, role: user.role }, process.env.JWT_SECRET, { expiresIn: '1d' });
 
     res.json({ message: 'Login successful', token, role: user.role });
+};
+
+// exports.createStripeAccount = async (req, res) => {
+//     const account = await stripe.account.create({
+//         type: "express"
+//     });
+//     res.json({accountId: account.id});
+// };
+
+exports.createStripeAccount = async (req, res) => {
+    try {
+        const account = await stripe.accounts.create({
+            type: "express",
+        });
+        res.json({ accountId: account.id });
+    } catch (error) {
+        res.status(500).json({ message: 'Error creating Stripe account' });
+    }
+};
+
+exports.generateOnboardingLink = async (req, res) => {
+    const { accountId } = req.body;
+    try {
+        const link = await stripe.accountLinks.create({
+            account: accountId,
+            refresh_url: `${process.env.FRONTEND_URL}/onboarding/refresh`,
+            return_url: `${process.env.FRONTEND_URL}/onboarding/return`,
+            type: 'account_onboarding',
+        });
+        res.json({ url: link.url });
+        await User.findByIdAndUpdate(req.user.id, { stripeAccountId: accountId });
+    } catch (error) {
+        res.status(500).json({ message: 'Error generating onboarding link' });
+    }
 };

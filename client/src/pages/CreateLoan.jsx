@@ -24,7 +24,7 @@ export default function CreateLoan() {
 
         // Debug: Check if token exists
         const token = localStorage.getItem('token');
-        console.log('Token from localStorage:', token);
+        // console.log('Token from localStorage:', token);
 
         try {
             const response = await api.post("/create", {
@@ -33,7 +33,7 @@ export default function CreateLoan() {
                 purpose: form.purpose
             });
 
-            console.log('Loan created successfully:', response.data);
+            // // console.log('Loan created successfully:', response.data);
             setMessage("Loan request created successfully!");
             
             // Reset form

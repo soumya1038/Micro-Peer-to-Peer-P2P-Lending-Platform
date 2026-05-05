@@ -20,6 +20,9 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ['borrower', 'lender'],
     },
+    stripeAccountId: {
+        type: String,
+    },
 }, 
 { timestamps: true });
 
