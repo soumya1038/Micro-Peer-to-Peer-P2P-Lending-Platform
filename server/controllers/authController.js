@@ -35,36 +35,3 @@ exports.login = async (req, res) => {
     res.json({ message: 'Login successful', token, role: user.role });
 };
 
-// exports.createStripeAccount = async (req, res) => {
-//     const account = await stripe.account.create({
-//         type: "express"
-//     });
-//     res.json({accountId: account.id});
-// };
-
-exports.createStripeAccount = async (req, res) => {
-    try {
-        const account = await stripe.accounts.create({
-            type: "express",
-        });
-        res.json({ accountId: account.id });
-    } catch (error) {
-        res.status(500).json({ message: 'Error creating Stripe account' });
-    }
-};
-
-exports.generateOnboardingLink = async (req, res) => {
-    const { accountId } = req.body;
-    try {
-        const link = await stripe.accountLinks.create({
-            account: accountId,
-            refresh_url: `${process.env.FRONTEND_URL}/onboarding/refresh`,
-            return_url: `${process.env.FRONTEND_URL}/onboarding/return`,
-            type: 'account_onboarding',
-        });
-        res.json({ url: link.url });
-        await User.findByIdAndUpdate(req.user.id, { stripeAccountId: accountId });
-    } catch (error) {
-        res.status(500).json({ message: 'Error generating onboarding link' });
-    }
-};
