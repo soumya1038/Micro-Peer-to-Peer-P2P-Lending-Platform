@@ -29,4 +29,4 @@ const loanSchema = new mongoose.Schema({
     },
 }, { timestamps: true });
 
-module.exports = mongoose.model('LoanRequest', loanSchema);
+module.exports = mongoose.models.LoanRequest || mongoose.model('LoanRequest', loanSchema);

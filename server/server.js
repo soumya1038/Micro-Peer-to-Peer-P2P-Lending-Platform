@@ -14,6 +14,12 @@ app.use(express.json());
 app.use('/api/auth', require('./routes/authRoutes'));
 app.use('/api/loans', require('./routes/loanRoutes'));
 app.use('/api/stripe', require('./routes/stripeRoutes'));
+app.use('/api/payments', require('./routes/paymentRoutes'));
+app.use('/api/webhook', require('./routes/webhookRoutes'));
+
+app.get('/', (req, res) => {
+    res.send('Welcome to the P2P Lending Platform API');
+});
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`Server running on port ${PORT}`));
