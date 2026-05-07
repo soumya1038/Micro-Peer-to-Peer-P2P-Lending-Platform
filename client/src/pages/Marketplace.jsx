@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import api from "../services/loanApi";
 import LoanCard from "../components/LoanCard";
 
+
 export default function Marketplace() {
     const [loans, setLoans] = useState([]);
     const [loading, setLoading] = useState(true);

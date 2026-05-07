@@ -1,5 +1,10 @@
 import { useState } from "react"
 import api from "../services/loanApi"
+import { Elements } from "@stripe/react-stripe-js";
+import { loadStripe } from "@stripe/stripe-js";
+import PaymentForm from "./PaymentForm";
+
+const stripePromise = loadStripe("pk_test_your_stripe_publishable_key");
 
 export default function LoanCard({ loan, onUpdate }) {
     const [amount, setAmount] = useState("");
@@ -37,25 +42,24 @@ export default function LoanCard({ loan, onUpdate }) {
             <p className="text-gray-600">Funded: ₹{loan.fundedAmount}</p>
             <p className="text-gray-600">Tenure: {loan.tenureMonths} months</p>
             <p className="text-sm mt-2">
-                <span className={`px-2 py-1 rounded ${
-                    loan.state === 'pending' ? 'bg-yellow-100 text-yellow-800' :
-                    loan.state === 'funded' ? 'bg-green-100 text-green-800' :
-                    'bg-blue-100 text-blue-800'
-                }`}>
+                <span className={`px-2 py-1 rounded ${loan.state === 'pending' ? 'bg-yellow-100 text-yellow-800' :
+                        loan.state === 'funded' ? 'bg-green-100 text-green-800' :
+                            'bg-blue-100 text-blue-800'
+                    }`}>
                     {loan.state}
                 </span>
             </p>
-            
+
             {(loan.state === "pending" || loan.state === "partially_funded") && (
                 <div className="mt-4">
-                    <input 
-                        type="number" 
+                    <input
+                        type="number"
                         placeholder="Enter amount to fund"
                         value={amount}
                         onChange={(e) => setAmount(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 mb-2"
                     />
-                    <button 
+                    <button
                         onClick={fundLoan}
                         className="w-full bg-blue-600 text-white py-2 rounded-md hover:bg-blue-700 transition duration-200"
                     >
@@ -63,7 +67,13 @@ export default function LoanCard({ loan, onUpdate }) {
                     </button>
                 </div>
             )}
-            
+            <Elements stripe={stripePromise}>
+                <PaymentForm
+                    loanId={loan._id}
+                    amount={amount}
+                    onSuccess={onUpdate} />
+            </Elements>
+
             {msg && <p className="mt-2 text-green-600 font-medium">{msg}</p>}
             {error && <p className="mt-2 text-red-600 font-medium">{error}</p>}
         </div>
