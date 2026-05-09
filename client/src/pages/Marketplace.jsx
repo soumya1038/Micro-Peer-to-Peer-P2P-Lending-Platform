@@ -18,7 +18,6 @@ export default function Marketplace() {
             const res = await api.get("/marketplace");
             setLoans(res.data.loans);
             setLoading(false);
-            console.log(loans);
         } catch (error) {
             setError("Could not load loans");
             setLoading(false);

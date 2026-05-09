@@ -43,6 +43,9 @@ export default function PaymentForm({ loanId, amount, onSuccess }) {
                 alert("Payment failed");
             } else {
                 if (result.paymentIntent.status === 'succeeded') {
+                    await paymentApi.post(`/${loanId}/confirm-funding`, {
+                        paymentIntentId: result.paymentIntent.id,
+                    });
                     setError("");
                     if (onSuccess) {
                         onSuccess();
