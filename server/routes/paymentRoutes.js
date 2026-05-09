@@ -4,8 +4,9 @@ const router = express.Router();
 const auth = require('../middleware/authMiddleware');
 const role = require('../middleware/roleMiddleware');
 
-const { createPaymentIntent } = require('../controllers/paymentController');
+const { createPaymentIntent, confirmFundingPayment } = require('../controllers/paymentController');
 
 router.post('/:id/create-payment-intent', auth, role(['lender']), createPaymentIntent);
+router.post('/:id/confirm-funding', auth, role(['lender']), confirmFundingPayment);
 
 module.exports = router;

@@ -9,7 +9,7 @@ const transactionSchema = new mongoose.Schema({
     lenderId: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',
-        required: true,
+        default: null,
     },
     borrowerId: {
         type: mongoose.Schema.Types.ObjectId,
@@ -33,6 +33,23 @@ const transactionSchema = new mongoose.Schema({
         type: String,
         unique: true,
         sparse: true,
+    },
+    transferId: {
+        type: String,
+        sparse: true,
+    },
+    connectedAccountId: {
+        type: String,
+        default: null,
+    },
+    serviceFeeAmount: {
+        type: Number,
+        default: 0,
+        min: 0,
+    },
+    errorMessage: {
+        type: String,
+        default: null,
     },
 }, { timestamps: true });
 

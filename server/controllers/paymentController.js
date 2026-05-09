@@ -1,6 +1,7 @@
 const stripe = require('../config/stripe');
 const LoanRequest = require('../models/LoanRequest');
 const User = require('../models/User');
+const { processFundingPaymentIntent } = require('./webhookController');
 
 exports.createPaymentIntent = async (req, res) => {
     try {
@@ -64,5 +65,50 @@ exports.createPaymentIntent = async (req, res) => {
     } catch (error) {
         console.error('Create payment intent error:', error);
         res.status(500).json({ message: error.message });
+    }
+};
+
+exports.confirmFundingPayment = async (req, res) => {
+    try {
+        const loanId = req.params.id;
+        const paymentIntentId = String(req.body.paymentIntentId || '').trim();
+
+        if (!paymentIntentId) {
+            return res.status(400).json({ message: 'paymentIntentId is required' });
+        }
+
+        const paymentIntent = await stripe.paymentIntents.retrieve(paymentIntentId);
+        if (!paymentIntent) {
+            return res.status(404).json({ message: 'PaymentIntent not found on Stripe' });
+        }
+
+        if (paymentIntent.status !== 'succeeded') {
+            return res.status(400).json({ message: `PaymentIntent is not succeeded. Current status: ${paymentIntent.status}` });
+        }
+
+        const metadata = paymentIntent.metadata || {};
+        if (metadata.type !== 'loan_funding') {
+            return res.status(400).json({ message: 'This PaymentIntent is not a loan funding payment' });
+        }
+
+        if (metadata.loanId !== loanId) {
+            return res.status(400).json({ message: 'PaymentIntent loanId does not match request loan id' });
+        }
+
+        if (metadata.lenderId !== req.user.id) {
+            return res.status(403).json({ message: 'You are not authorized to confirm this funding payment' });
+        }
+
+        const result = await processFundingPaymentIntent(paymentIntent);
+        const loan = await LoanRequest.findById(loanId).select('amount fundedAmount status');
+
+        return res.json({
+            message: result?.duplicate ? 'Funding already synced' : 'Funding synced successfully',
+            result,
+            loan,
+        });
+    } catch (error) {
+        console.error('Confirm funding payment error:', error);
+        return res.status(500).json({ message: error.message });
     }
 };
