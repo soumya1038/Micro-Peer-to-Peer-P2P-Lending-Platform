@@ -50,6 +50,17 @@ This platform connects borrowers and lenders directly for micro-loans. Borrowers
 * Funding records and transaction records updated after successful payment
 * ACID transaction handling for financial writes
 
+### Week 3: Repayment and Scheduling (In Progress)
+
+* Repayment schedule model and automatic schedule generation when loan becomes fully funded
+* Cron-based due status updater (`node-cron`) for pending/due/overdue transitions
+* Borrower repayment PaymentIntent flow (`/api/repayments/:id/create-payment-intent`)
+* Webhook repayment processing with:
+  * schedule allocation
+  * outstanding balance update
+  * platform service fee deduction
+  * lender payout transfer attempts via Stripe Connect
+
 ---
 
 ## Current System Flow
@@ -58,7 +69,8 @@ This platform connects borrowers and lenders directly for micro-loans. Borrowers
 
 1. Register/Login
 2. Create loan request
-3. View own loans
+3. View own loans and repayment schedule
+4. Make repayments through Stripe card flow
 
 ### Lender
 
@@ -96,6 +108,12 @@ This platform connects borrowers and lenders directly for micro-loans. Borrowers
 ### Webhook
 
 * POST `/api/webhook`
+
+### Repayments
+
+* POST `/api/repayments/:id/create-payment-intent`
+* GET `/api/repayments/loan/:id`
+* GET `/api/repayments/borrower/summary`
 
 ---
 
@@ -138,6 +156,8 @@ MONGO_URI=mongodb://localhost:27017/p2p-lending
 JWT_SECRET=your_jwt_secret
 STRIPE_SECRET_KEY=sk_test_...
 STRIPE_WEBHOOK_SECRET=whsec_...
+PLATFORM_SERVICE_FEE_RATE=0.02
+REPAYMENT_CRON_SCHEDULE=0 * * * *
 CLIENT_URL=http://localhost:3000
 ```
 
@@ -154,8 +174,8 @@ VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
 
 * Week 1: Completed (core features)
 * Week 2: Completed (onboarding + funding + webhook flow)
-* Week 3: Not started
+* Week 3: In progress (repayment engine + borrower repayment flow implemented)
 
 ## Next Step
 
-Start Week 3: repayment schedules, due generation, borrower repayment, and payout split logic.
+Finish Week 3 with deeper repayment testing and then move into Week 4 dashboards + notifications.
