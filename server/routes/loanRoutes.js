@@ -3,7 +3,7 @@ const router = express.Router();
 
 const authMiddleware = require('../middleware/authMiddleware');
 const roleMiddleware = require('../middleware/roleMiddleware');
-const { createLoan, getMarketplace, getMyLoans, getLoanById, fundLoan } = require('../controllers/loanController');
+const { createLoan, getMarketplace, getMyLoans, getLoanById } = require('../controllers/loanController');
 
 router.post("/create", authMiddleware, roleMiddleware(['borrower']), createLoan);
 
@@ -12,7 +12,5 @@ router.get("/marketplace", authMiddleware, roleMiddleware(['lender']), getMarket
 router.get("/my-loans", authMiddleware, roleMiddleware(['borrower']), getMyLoans);
 
 router.get("/:id", authMiddleware, getLoanById);
-
-router.post("/:id/fund", authMiddleware, roleMiddleware(['lender']), fundLoan);
 
 module.exports = router;

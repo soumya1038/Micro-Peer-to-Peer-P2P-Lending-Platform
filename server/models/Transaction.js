@@ -11,19 +11,28 @@ const transactionSchema = new mongoose.Schema({
         ref: 'User',
         required: true,
     },
+    borrowerId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User',
+    },
     amount: {
         type: Number,
         required: true,
     },
     type: {
         type: String,
-        enum: ['funding'],
+        enum: ['funding', 'repayment', 'payout', 'service_fee'],
         required: true,
     },
     status: {
         type: String,
-        enum: ['success', 'failed'],
+        enum: ['pending', 'success', 'failed'],
         default: 'success',
+    },
+    paymentIntentId: {
+        type: String,
+        unique: true,
+        sparse: true,
     },
 }, { timestamps: true });
 

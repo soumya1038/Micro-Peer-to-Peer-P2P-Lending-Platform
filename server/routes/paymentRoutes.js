@@ -6,6 +6,6 @@ const role = require('../middleware/roleMiddleware');
 
 const { createPaymentIntent } = require('../controllers/paymentController');
 
-router.post('/:id/create-payment-intent', auth, role('lender'), createPaymentIntent);
+router.post('/:id/create-payment-intent', auth, role(['lender']), createPaymentIntent);
 
 module.exports = router;
