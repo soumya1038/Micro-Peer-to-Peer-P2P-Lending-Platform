@@ -2,7 +2,7 @@
 
 ## Overview
 
-This project is a micro peer-to-peer lending platform that connects borrowers and lenders directly. Borrowers can request small loans, and lenders can fund those loans, enabling financial inclusion and decentralized investment opportunities.
+This platform connects borrowers and lenders directly for micro-loans. Borrowers can request small loans, and lenders can fund them through Stripe.
 
 ---
 
@@ -25,51 +25,30 @@ This project is a micro peer-to-peer lending platform that connects borrowers an
 
 ### Payments
 
-* Stripe API (Stripe Connect)
+* Stripe API (Connect + PaymentIntents + Webhooks)
 
 ---
 
 ## Features Implemented
 
-### Week 1: Foundation & Loan Management
+### Week 1: Foundation and Loan Requests
 
-* User Authentication (JWT)
-* Role-Based Access (Borrower / Lender)
-* Loan Request Creation
-* Borrower Dashboard
-* Lender Marketplace (View Loan Requests)
-* Protected Routes
-* MongoDB Models:
+* User authentication (JWT)
+* Role-based access (Borrower / Lender)
+* Borrower loan request creation
+* Borrower loan listing
+* Lender marketplace listing
+* Protected frontend routes
+* Core models: `User`, `LoanRequest`
 
-  * User
-  * LoanRequest
+### Week 2: Lender Onboarding and Loan Funding
 
----
-
-### Week 2: Funding & Stripe Onboarding
-
-#### Backend
-
-* FundedLoan Model (tracks investments)
-* Transaction Model (tracks financial actions)
-* Loan Funding Logic (multi-lender support)
-* MongoDB ACID Transactions for consistency
-
-#### Stripe Connect Integration
-
-* Lender onboarding using Stripe Express accounts
-* Stripe account creation via API
-* Onboarding link generation
-* Stripe account details stored in database
-
-#### Lender Dashboard
-
-* Stripe connection status display:
-
-  * Account ID
-  * Charges Enabled
-  * Payouts Enabled
-  * Details Submitted
+* Stripe Connect onboarding for lenders (Express accounts)
+* Stripe account status endpoint for lender dashboard
+* Funding via Stripe PaymentIntent (`/api/payments/:id/create-payment-intent`)
+* Stripe webhook verification and funding finalization (`/api/webhook`)
+* Funding records and transaction records updated after successful payment
+* ACID transaction handling for financial writes
 
 ---
 
@@ -78,15 +57,15 @@ This project is a micro peer-to-peer lending platform that connects borrowers an
 ### Borrower
 
 1. Register/Login
-2. Create Loan Request
-3. View Own Loans
+2. Create loan request
+3. View own loans
 
 ### Lender
 
 1. Register/Login
-2. Connect Stripe Account
-3. View Loan Marketplace
-4. (Next Step) Fund Loans
+2. Connect Stripe account
+3. Browse marketplace
+4. Enter funding amount and pay through Stripe
 
 ---
 
@@ -102,95 +81,30 @@ This project is a micro peer-to-peer lending platform that connects borrowers an
 * POST `/api/loans/create`
 * GET `/api/loans/my-loans`
 * GET `/api/loans/marketplace`
+* GET `/api/loans/:id`
 
 ### Stripe
 
 * POST `/api/stripe/create-account`
 * GET `/api/stripe/onboarding-link`
+* GET `/api/stripe/account-status`
 
----
+### Payments
 
-## Database Models
+* POST `/api/payments/:id/create-payment-intent`
 
-### User
+### Webhook
 
-* name
-* email
-* password
-* role
-* stripeAccountId
-
-### LoanRequest
-
-* borrowerId
-* amount
-* tenureMonths
-* purpose
-* status
-* fundedAmount
-
-### FundedLoan
-
-* loanId
-* lenderId
-* amount
-
-### Transaction
-
-* type
-* loanId
-* lenderId
-* amount
-
----
-
-## Important Concepts Implemented
-
-* Role-based authorization
-* MongoDB multi-document transactions
-* Stripe Connect onboarding flow
-* Secure backend validation
-
----
-
-## Future Plan
-
-### Week 2 (Remaining)
-
-* Stripe Payment Integration (PaymentIntent)
-* Replace internal funding with real payments
-* Stripe Webhook for payment confirmation
-* Automatic loan status update after payment
-
----
-
-### Week 3: Repayment System
-
-* EMI calculation
-* Repayment schedule generation
-* Cron job for due tracking
-* Borrower repayment via Stripe
-* Distribution to lenders
-* Platform fee deduction
-
----
-
-### Week 4: Dashboard & Notifications
-
-* Borrower Dashboard (loans, EMIs, history)
-* Lender Dashboard (investments, returns)
-* Notification system (email/in-app)
-* Full system testing
-* API documentation
+* POST `/api/webhook`
 
 ---
 
 ## Security Practices
 
-* JWT authentication
-* Role-based route protection
-* Backend-only financial logic
-* Stripe webhook validation (planned)
+* JWT authentication and role-based authorization
+* All financial amounts validated on backend
+* Stripe webhook signature verification
+* Server-side status checks before fund updates
 
 ---
 
@@ -218,25 +132,30 @@ npm run dev
 
 ### Backend `.env`
 
-```
-MONGO_URI=your_mongo_uri
+```env
+PORT=5500
+MONGO_URI=mongodb://localhost:27017/p2p-lending
 JWT_SECRET=your_jwt_secret
-STRIPE_SECRET_KEY=your_stripe_secret
-STRIPE_WEBHOOK_SECRET=your_webhook_secret
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+CLIENT_URL=http://localhost:3000
+```
+
+### Frontend `.env`
+
+```env
+VITE_API_URL=http://localhost:5500/api
+VITE_STRIPE_PUBLISHABLE_KEY=pk_test_...
 ```
 
 ---
 
 ## Current Status
 
-```text
-✔ Week 1 Completed
-✔ Week 2 (Onboarding) Completed
-⏳ Week 2 (Payments) In Progress
-```
-
----
+* Week 1: Completed (core features)
+* Week 2: Completed (onboarding + funding + webhook flow)
+* Week 3: Not started
 
 ## Next Step
 
-Implement Stripe Payment + Webhook system for real loan funding.
+Start Week 3: repayment schedules, due generation, borrower repayment, and payout split logic.

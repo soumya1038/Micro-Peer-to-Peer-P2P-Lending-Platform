@@ -27,3 +27,6 @@ coverage/
 
 # Backups
 *.zip
+
+# Documentation
+docs/
